@@ -1,12 +1,12 @@
 import { useStore, useSelectedLocation } from '../state/store';
-import { LocationIcon, RefreshIcon } from './icons';
+import { CloseIcon, LocationIcon, RefreshIcon } from './icons';
 import { HourlyStrip } from './HourlyStrip';
 import { TenDayForecast } from './TenDayForecast';
 import { TileGrid } from './Tiles';
 import { formatTemperature, formatTime } from './format';
 
 export function Hero() {
-  const { locations, refresh, refreshingId } = useStore();
+  const { locations, refresh, refreshingId, remove, removingId } = useStore();
   const selected = useSelectedLocation();
 
   if (!selected) {
@@ -32,6 +32,10 @@ export function Hero() {
   const validPeriod = selected.weather?.valid_period_text;
   const source = selected.weather?.source;
   const isRefreshing = refreshingId === selected.id;
+  const isRemoving = removingId === selected.id;
+  const onRemove = () => {
+    if (window.confirm(`Remove ${area}?`)) void remove(selected.id);
+  };
   const temperature = formatTemperature(selected.weather?.temperature_c);
   const high = formatTemperature(selected.weather?.forecast_high_c);
   const low = formatTemperature(selected.weather?.forecast_low_c);
@@ -66,15 +70,26 @@ export function Hero() {
         <TileGrid weather={selected.weather} />
 
         <footer className="mt-2 flex flex-col items-center gap-3 pb-8 text-xs text-white/55">
-          <button
-            type="button"
-            onClick={() => void refresh(selected.id)}
-            disabled={isRefreshing}
-            className="flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.08] px-3 py-1.5 text-xs font-medium text-white/85 backdrop-blur-xl hover:bg-white/[0.14] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <RefreshIcon className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>{isRefreshing ? 'Refreshing…' : 'Refresh'}</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => void refresh(selected.id)}
+              disabled={isRefreshing || isRemoving}
+              className="flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.08] px-3 py-1.5 text-xs font-medium text-white/85 backdrop-blur-xl hover:bg-white/[0.14] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <RefreshIcon className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>{isRefreshing ? 'Refreshing…' : 'Refresh'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={onRemove}
+              disabled={isRefreshing || isRemoving}
+              className="flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.08] px-3 py-1.5 text-xs font-medium text-white/85 backdrop-blur-xl hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <CloseIcon className="h-3.5 w-3.5" />
+              <span>{isRemoving ? 'Removing…' : 'Remove'}</span>
+            </button>
+          </div>
           <p>
             Weather for {area}
             {source ? ` · ${source}` : ''}
