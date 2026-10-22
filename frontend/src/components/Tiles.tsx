@@ -1,4 +1,13 @@
-import { CloudIcon, DropletIcon, SunIcon, ThermometerIcon, TrendIcon, WindIcon } from './icons';
+import {
+  CloudIcon,
+  ConditionIcon,
+  DropletIcon,
+  SunIcon,
+  ThermometerIcon,
+  TrendIcon,
+  WindIcon,
+} from './icons';
+import { formatTime } from './format';
 import type { ReactNode } from 'react';
 import type { WeatherSnapshot } from '../types';
 
@@ -72,6 +81,44 @@ function airQualityLabel(psi: number | null | undefined): string {
   if (psi <= 200) return 'Unhealthy';
   if (psi <= 300) return 'Very Unhealthy';
   return 'Hazardous';
+}
+
+export function ConditionTile({ weather }: WeatherProps) {
+  const updated = formatTime(weather?.observed_at);
+
+  return (
+    <TileShell
+      icon={<CloudIcon className="h-3.5 w-3.5" />}
+      title="Condition"
+      className="col-span-2"
+    >
+      <div className="flex items-center gap-3">
+        <ConditionIcon
+          condition={weather?.condition}
+          className="h-10 w-10 shrink-0 text-white/90"
+        />
+        <div className="min-w-0">
+          <div className="truncate text-2xl font-light leading-tight text-white/95">
+            {weather?.condition || 'Unavailable'}
+          </div>
+          <div className="mt-0.5 truncate text-sm text-white/70">
+            {weather?.area ?? 'Nearest area unavailable'}
+          </div>
+        </div>
+      </div>
+      <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-white/10 pt-3 text-xs">
+        <div>
+          <dt className="text-white/50">Valid</dt>
+          <dd className="mt-0.5 text-white/85">{weather?.valid_period_text ?? '--'}</dd>
+        </div>
+        <div>
+          <dt className="text-white/50">Updated</dt>
+          <dd className="mt-0.5 text-white/85">{updated ?? '--'}</dd>
+        </div>
+      </dl>
+      <p className="mt-3 text-xs text-white/55">2-hour forecast for the nearest area.</p>
+    </TileShell>
+  );
 }
 
 export function AirQualityTile({ weather }: WeatherProps) {
@@ -247,6 +294,7 @@ export function AveragesTile({ weather }: WeatherProps) {
 export function TileGrid({ weather }: WeatherProps) {
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <ConditionTile weather={weather} />
       <AirQualityTile weather={weather} />
       <WindTile weather={weather} />
       <UVTile weather={weather} />

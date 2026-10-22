@@ -20,6 +20,31 @@ export function CloudIcon({ className = 'h-5 w-5' }: IconProps) {
   );
 }
 
+export function RainIcon({ className = 'h-5 w-5' }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M7 15h10a4 4 0 0 0 .8-7.92A6 6 0 0 0 6.1 8.4 3.5 3.5 0 0 0 7 15Z" />
+      <path d="M9 18l-1 2M13 18l-1 2M17 18l-1 2" />
+    </svg>
+  );
+}
+
+interface ConditionIconProps extends IconProps {
+  condition: string | null | undefined;
+}
+
+// Picks an icon from 2-hour forecast text such as "Fair (Day)", "Showers" or "Cloudy".
+export function ConditionIcon({ condition, className = 'h-5 w-5' }: ConditionIconProps) {
+  const text = condition?.toLowerCase() ?? '';
+  if (text.includes('fair') || text.includes('sunny')) {
+    return <SunIcon className={`${className} text-amber-300`} />;
+  }
+  if (/rain|shower|thunder|drizzle/.test(text)) {
+    return <RainIcon className={className} />;
+  }
+  return <CloudIcon className={className} />;
+}
+
 export function SunIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} {...base}>

@@ -1,5 +1,5 @@
 import { useStore } from '../state/store';
-import { CloudIcon, HomeIcon } from './icons';
+import { ConditionIcon, DropletIcon, HomeIcon } from './icons';
 import { formatTemperature, formatTime } from './format';
 import type { KeyboardEvent } from 'react';
 import type { Location } from '../types';
@@ -19,6 +19,8 @@ export function SidebarCard({ location, isHome }: SidebarCardProps) {
   const temperature = formatTemperature(location.weather.temperature_c);
   const high = formatTemperature(location.weather.forecast_high_c);
   const low = formatTemperature(location.weather.forecast_low_c);
+  const humidity = formatReading(location.weather.humidity_percent, 0, '%');
+  const rainfall = formatReading(location.weather.rainfall_mm, 1, ' mm');
 
   const onSelect = () => select(location.id);
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -61,10 +63,17 @@ export function SidebarCard({ location, isHome }: SidebarCardProps) {
         </div>
         <div className="text-3xl font-light tabular-nums text-white/90">{temperature}</div>
       </div>
-      <div className="mt-3 flex items-center justify-between border-t border-white/10 px-4 py-2 text-xs">
-        <div className="flex items-center gap-2 text-white/80">
-          <CloudIcon className="h-4 w-4 text-white/70" />
-          <span>{condition}</span>
+      <div className="mt-1 flex items-center gap-3 px-4 text-[11px] tabular-nums text-white/60">
+        <span className="flex items-center gap-1" title="Relative humidity">
+          <DropletIcon className="h-3 w-3" />
+          {humidity}
+        </span>
+        <span title="Rainfall">Rain {rainfall}</span>
+      </div>
+      <div className="mt-2 flex items-center justify-between border-t border-white/10 px-4 py-2 text-xs">
+        <div className="flex min-w-0 items-center gap-2 text-white/80">
+          <ConditionIcon condition={location.weather.condition} className="h-4 w-4 shrink-0" />
+          <span className="truncate">{condition}</span>
         </div>
         <div className="text-white/60 tabular-nums">
           H:{high} L:{low}
@@ -72,4 +81,10 @@ export function SidebarCard({ location, isHome }: SidebarCardProps) {
       </div>
     </div>
   );
+}
+
+function formatReading(value: number | null | undefined, digits: number, unit: string): string {
+  return typeof value === 'number' && Number.isFinite(value)
+    ? `${value.toFixed(digits)}${unit}`
+    : '--';
 }
