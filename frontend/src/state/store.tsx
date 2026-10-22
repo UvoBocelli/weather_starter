@@ -3,6 +3,7 @@ import {
   listLocations,
   createLocation,
   refreshLocation,
+  deleteLocation,
   logInteraction,
 } from '../api';
 import type { CreateLocationPayload, Location, ProviderProps, StoreValue } from '../types';
@@ -15,6 +16,7 @@ export function StoreProvider({ children }: ProviderProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshingId, setRefreshingId] = useState<number | null>(null);
+  const [removingId, setRemovingId] = useState<number | null>(null);
   const [error, setError] = useState<unknown>(null);
 
   const load = useCallback(async (): Promise<Location[]> => {
@@ -93,12 +95,35 @@ export function StoreProvider({ children }: ProviderProps) {
     [load],
   );
 
+  const remove = useCallback(
+    async (id: number) => {
+      setRemovingId(id);
+      setError(null);
+      logInteraction('location_remove_clicked', { locationId: id });
+      try {
+        await deleteLocation(id);
+        await load();
+        logInteraction('location_removed', { locationId: id });
+      } catch (err) {
+        setError(err);
+        logInteraction('location_remove_failed', {
+          locationId: id,
+          error: err instanceof Error ? err.message : 'Unknown error',
+        });
+      } finally {
+        setRemovingId(null);
+      }
+    },
+    [load],
+  );
+
   const value: StoreValue = {
     locations,
     selectedId: effectiveSelectedId,
     isAdding,
     isLoading,
     refreshingId,
+    removingId,
     error,
     select: setSelectedId,
     setAdding: (nextIsAdding) => {
@@ -107,6 +132,7 @@ export function StoreProvider({ children }: ProviderProps) {
     },
     create,
     refresh,
+    remove,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
